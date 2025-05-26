@@ -26,7 +26,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class UrlController extends AbstractController
 {
     public function __construct(
-        private readonly CreateShortUrlUseCase $createUrlUseCase,
+        private readonly CreateShortUrlUseCase $createShortUrlUseCase,
         private readonly ViewShortUrlUseCase $viewShortUrlUseCase,
     ) {
     }
@@ -69,7 +69,7 @@ class UrlController extends AbstractController
             new UserMetaDataRaw($request->getClientIp(), $request->headers->get('User-Agent')),
         );
         try {
-            $shortUrl = $this->createUrlUseCase->handle($command);
+            $shortUrl = $this->createShortUrlUseCase->handle($command);
         } catch (PastExpiresAtException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage());
         }
