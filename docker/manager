@@ -1,0 +1,236 @@
+#!/usr/bin/env bash
+
+# set -x
+
+DOCKER_NETWORK_NAME=app
+DOCKER_COMPOSE_DEV="docker compose -f ./docker/compose.yml"
+
+ARGS=${@:2}
+
+main() {
+    case "${1:-}" in
+        up) up;;
+        down) down;;
+        composer-install) composer_install;;
+        composer-bash) composer_bash "${@:2}";;
+        migrations-up) migrations_up;;
+        php-fpm-bash) php_fpm_bash;;
+
+        run-tests) run_tests;;
+        run-tests-with-coverage) run_tests_with_coverage;;
+        generate-openapi) generate_openapi;;
+        fix-code-style) fix_code_style;;
+        run-pma) run_pma;;
+        run-redis-admin) run_redis_admin;;
+        xdebug-container-on) xdebug_container_on ${2-} ${3-};;
+        xdebug-container-off) xdebug_container_off ${2-};;
+
+        *) usage;;
+    esac
+}
+
+usage() {
+    local cmd_name="  %-40s"
+    local cmd_desc="%-s\n"
+
+    echo "Usage: $0 COMMAND" >&2
+    echo
+    echo "Commands:"
+    printf "${cmd_name} ${cmd_desc}" "up" "Start containers"
+    printf "${cmd_name} ${cmd_desc}" "down" "Stop and remove containers"
+    printf "${cmd_name} ${cmd_desc}" "composer-install" "Install PHP packages"
+    printf "${cmd_name} ${cmd_desc}" "composer-bash" "Run bash in composer container"
+    printf "${cmd_name} ${cmd_desc}" "migrations-up" "Execute SQL migrations"
+    printf "${cmd_name} ${cmd_desc}" "php-fpm-bash" "Run bash in php-fpm container"
+    echo
+    echo "Helpful services:"
+    printf "${cmd_name} ${cmd_desc}" "run-tests" "Run tests"
+    printf "${cmd_name} ${cmd_desc}" "run-tests-with-coverage" "Run tests with code coverage"
+    printf "${cmd_name} ${cmd_desc}" "generate-openapi" "Generate OpenAPI"
+    printf "${cmd_name} ${cmd_desc}" "fix-code-style" "Run code style formatter"
+    printf "${cmd_name} ${cmd_desc}" "run-pma" "Run phpMyAdmin on http://localhost:3001"
+    printf "${cmd_name} ${cmd_desc}" "run-redis-admin" "Run phpRedisAdmin on http://localhost:3002"
+    printf "${cmd_name} ${cmd_desc}" "xdebug-container-on [container] [mode]" "Enables xdebug inside a specific container"
+    printf "${cmd_name} ${cmd_desc}" "xdebug-container-off [container]" "Disables xdebug inside a specific container"
+
+}
+
+up() {
+    $DOCKER_COMPOSE_DEV pull
+    composer_install
+
+    $DOCKER_COMPOSE_DEV up -d
+    migrations_up
+
+    echo "Project started! Try to make URL short"
+    echo "curl -XPOST 'http://localhost:8182/api/urls?XDEBUG_SESSION=PHPSTORM' \\"
+    echo "    -H 'Content-Type: application/json' \\"
+    echo "    --data '{\"url\":\"https://symfony.com/doc/current/console.html\", \"expiresAt\":\"\"}'"
+}
+
+down() {
+    $DOCKER_COMPOSE_DEV down || true
+}
+
+composer_install() {
+    docker run -t --name composer --rm \
+    --volume ${PWD}/backend:/app \
+    composer install
+}
+
+composer_bash() {
+    docker run -it --name composer --rm \
+      --volume ${PWD}/backend:/app \
+      composer bash
+}
+
+migrations_up() {
+    $DOCKER_COMPOSE_DEV exec php-fpm /bin/bash -c \
+      'php bin/console doctrine:migrations:migrate --no-interaction'
+}
+
+php_fpm_bash() {
+  $DOCKER_COMPOSE_DEV run --rm php-fpm /bin/bash
+}
+
+run_tests() {
+    $DOCKER_COMPOSE_DEV exec php-fpm /bin/bash -c \
+      'php vendor/bin/phpunit ./tests/'
+}
+
+run_tests_with_coverage() {
+    xdebug_container_on docker-php-fpm-1
+    $DOCKER_COMPOSE_DEV exec php-fpm /bin/bash -c \
+      'XDEBUG_MODE=coverage php vendor/bin/phpunit ./tests/ --coverage-html phpunit-coverage-html-report'
+    xdebug_container_off docker-php-fpm-1
+}
+
+generate_openapi() {
+    $DOCKER_COMPOSE_DEV exec php-fpm /bin/bash -c \
+      'php vendor/bin/openapi src -o openapi.yaml'
+}
+
+fix_code_style() {
+    $DOCKER_COMPOSE_DEV exec php-fpm /bin/bash -c \
+      'PHP_CS_FIXER_IGNORE_ENV=1 php ./vendor/bin/php-cs-fixer fix'
+}
+
+run_pma() {
+    local port=3001
+    local existsContainer="$( docker ps -qaf name=phpmyadmin )"
+    if [[ "${existsContainer}" ]]; then
+        docker rm -f "${existsContainer}" > /dev/null
+    fi
+
+    docker run --name phpmyadmin --rm --network="${DOCKER_NETWORK_NAME}" -d \
+        -e PMA_ARBITRARY=1 \
+        -e PMA_HOSTS=db.app.local,db-test.app.local \
+        -e PMA_USER=root \
+        -e PMA_PASSWORD=some_s3cr3t_r00t_PWD \
+        -p "${port}":80 \
+        phpmyadmin/phpmyadmin > /dev/null
+
+    echo "phpMyAdmin available on http://localhost:${port}"
+}
+
+run_redis_admin() {
+    local port=3002
+    local existsContainer="$( docker ps -qaf name=phpredisadmin )"
+    if [[ "${existsContainer}" ]]; then
+        docker rm -f "${existsContainer}" > /dev/null
+    fi
+
+    docker run --name phpredisadmin --rm --network="${DOCKER_NETWORK_NAME}" -d \
+        -v "$( pwd )"/docker/phpredisadmin/config.inc.php:/src/app/includes/config.inc.php \
+        -p "${port}":80 \
+        erikdubbelboer/phpredisadmin > /dev/null
+
+        echo "phpRedisAdmin available on http://localhost:${port}"
+}
+
+xdebug_container_off() {
+  containerName=${1-}
+  dockerCmd="docker compose"
+  if [[ -z ${containerName} ]]; then
+    echo
+    echo "type containerName argument"
+    exit
+  fi
+
+  set +o errexit
+  service=$(docker compose ps $containerName --services 2>/dev/null)
+  set -o errexit
+
+  if [ -z ${service} ]; then
+      dockerCmd=docker
+  fi
+
+  $dockerCmd exec $containerName bash -c "cat /dev/null > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && kill -USR2 1"
+  echo "xdebug disabled in ${containerName} container"
+
+  if [ -z ${service} ]; then
+     $dockerCmd restart $containerName
+     echo "container restarted"
+  fi
+}
+
+xdebug_container_on() {
+  containerName=${1-}
+  xdebugMode="debug"
+  dockerCmd="docker compose"
+  if [[ ${2-} ]]; then
+    xdebugMode=${2-}
+  fi
+
+  if [[ -z ${containerName} ]]; then
+    echo
+    echo "type containerName argument"
+    exit
+  fi
+
+  set +o errexit
+  service=$(docker compose ps $containerName --services 2>/dev/null)
+  set -o errexit
+
+  if [ -z ${service} ]; then
+      dockerCmd=docker
+  fi
+
+  $dockerCmd exec $containerName bash -c "
+cat << EOF > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+zend_extension=xdebug.so
+
+xdebug.mode=${xdebugMode}
+xdebug.client_host=host.docker.internal
+xdebug.client_port=9003
+EOF
+kill -USR2 1
+  "
+
+  echo "set xdebug.mode=${xdebugMode}"
+  echo "xdebug enabled in '${containerName}' container"
+
+  if [ -z ${service} ]; then
+     $dockerCmd restart $containerName
+     echo "container restarted"
+  fi
+}
+
+
+main "$@"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

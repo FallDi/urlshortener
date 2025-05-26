@@ -1,0 +1,68 @@
+services:
+  nginx:
+    image: nginx:1.26.3
+    ports:
+      - '8182:80'
+    networks:
+      default:
+        aliases:
+          - app.local
+    volumes:
+      - ./../backend:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php-fpm
+
+  php-fpm:
+    build:
+      dockerfile: ./php-fpm/Dockerfile
+    volumes:
+      - ./../backend:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11.7.2
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_520_ci', '--transaction-isolation=READ-COMMITTED']
+    environment:
+      MYSQL_ROOT_PASSWORD: some_s3cr3t_r00t_PWD
+    networks:
+      default:
+        aliases:
+          - db.app.local
+    volumes:
+      - ./mariadb/:/docker-entrypoint-initdb.d/
+      - db-data:/var/lib/mysql
+    healthcheck:
+      # see https://mariadb.com/kb/en/using-healthcheck-sh/#compose-file-example
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 5s
+      start_period: 5s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7.4.2
+    networks:
+      default:
+        aliases:
+          - redis.app.local
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -h redis.app.local ping | grep "PONG" || exit 1']
+      interval: 2s
+      start_period: 2s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    name: app
+
+volumes:
+  db-data:
+  redis-data:

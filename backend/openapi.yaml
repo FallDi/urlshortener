@@ -1,0 +1,100 @@
+openapi: 3.0.0
+info:
+  title: 'Url shortener API'
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost:8182'
+paths:
+  /api/urls:
+    post:
+      summary: 'Creates short URL'
+      operationId: e3284e428d332e42292648b1adc3fc0f
+      requestBody:
+        description: 'Input data format'
+        content:
+          application/json:
+            schema:
+              required:
+                - url
+              properties:
+                url:
+                  description: 'Url to be shorted'
+                  type: string
+                expiresAt:
+                  description: 'Url expiration datetime'
+                  type: string
+                  format: date-time
+              type: object
+      responses:
+        '201':
+          description: 'Short URL created successfully'
+          content:
+            application/json:
+              schema:
+                required:
+                  - shortUrl
+                properties:
+                  shortUrl: { description: 'Short URL to be shorted', type: string }
+                type: object
+        '422':
+          $ref: '#/components/responses/clientError'
+        '500':
+          $ref: '#/components/responses/serverError'
+  '/api/urls/{id}':
+    get:
+      summary: 'View short URL'
+      operationId: a8b8a8a9195fe7b8037a51cf6e79b363
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: 'Short URL created successfully'
+        '404':
+          $ref: '#/components/responses/clientError'
+        '500':
+          $ref: '#/components/responses/serverError'
+components:
+  schemas:
+    ClientErrorResponseViolation:
+      required:
+        - path
+        - message
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+      type: object
+  responses:
+    clientError:
+      description: 'Client request error'
+      content:
+        application/json:
+          schema:
+            required:
+              - message
+            properties:
+              message:
+                type: string
+              violations:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientErrorResponseViolation'
+            type: object
+    serverError:
+      description: 'Internal server error response'
+      content:
+        application/json:
+          schema:
+            required:
+              - message
+            properties:
+              message:
+                type: string
+            type: object
