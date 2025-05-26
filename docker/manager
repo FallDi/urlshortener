@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# set -x
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately https://stackoverflow.com/a/2871034/3178453
 
 DOCKER_NETWORK_NAME=app
 DOCKER_COMPOSE_DEV="docker compose -f ./docker/compose.yml"
