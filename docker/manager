@@ -12,6 +12,7 @@ main() {
     case "${1:-}" in
         up) up;;
         down) down;;
+        build) build;;
         composer-install) composer_install;;
         composer-bash) composer_bash "${@:2}";;
         migrations-up) migrations_up;;
@@ -39,6 +40,7 @@ usage() {
     echo "Commands:"
     printf "${cmd_name} ${cmd_desc}" "up" "Start containers"
     printf "${cmd_name} ${cmd_desc}" "down" "Stop and remove containers"
+    printf "${cmd_name} ${cmd_desc}" "build" "Build docker services"
     printf "${cmd_name} ${cmd_desc}" "composer-install" "Install PHP packages"
     printf "${cmd_name} ${cmd_desc}" "composer-bash" "Run bash in composer container"
     printf "${cmd_name} ${cmd_desc}" "migrations-up" "Execute SQL migrations"
@@ -71,6 +73,10 @@ up() {
 
 down() {
     $DOCKER_COMPOSE_DEV down || true
+}
+
+build() {
+    $DOCKER_COMPOSE_DEV build
 }
 
 composer_install() {

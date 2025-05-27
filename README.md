@@ -62,6 +62,7 @@ Usage: ./docker/manager COMMAND
 Commands:
   up                                       Start containers
   down                                     Stop and remove containers
+  build                                    Build docker services
   composer-install                         Install PHP packages
   composer-bash                            Run bash in composer container
   migrations-up                            Execute SQL migrations
@@ -89,11 +90,13 @@ Helpful services:
 
 ## Troubleshooting
 * Project looks outdated after source code changes
-  * Try to cleanup Symfony DI container cache e.g. `APP_ENV=dev php backend/bin/console cache:clear`
+  * Solution: Try to cleanup Symfony DI container cache e.g. `APP_ENV=dev php backend/bin/console cache:clear`
+* I do changes in docker compose configuration (e.g. update service or Dockerfile), but changes not updated after 
+  `./docker/manager up`
+  * Solution: try to build services via `./docker/manager build`
 * Project runs slowly on WSL2
     * Solution: To avoid slow IO store project in WSL filesystem `\\wsl$`, instead of using windows drive mounted to WSL `/mnt/`,
   see https://stackoverflow.com/a/67736079/3178453 or https://stackoverflow.com/a/70560669/3178453
 
 ## Possible improvements
 * Separate DB for `APP_ENV=test`
-* Custom PHP config e.g. `expose_php = off`

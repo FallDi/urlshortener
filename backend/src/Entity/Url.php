@@ -12,14 +12,14 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'url')]
 class Url
 {
-    public const int MAX_LONG_URL_LENGTH = 2048;
+    public const int MAX_URL_LENGTH = 2048;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: self::MAX_LONG_URL_LENGTH)]
+    #[ORM\Column(length: self::MAX_URL_LENGTH)]
     private string $url;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]

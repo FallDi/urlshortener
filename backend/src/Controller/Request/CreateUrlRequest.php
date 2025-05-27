@@ -13,7 +13,7 @@ readonly class CreateUrlRequest
 
     public function __construct(
         #[Assert\NotBlank]
-        #[Assert\Length(max:Url::MAX_LONG_URL_LENGTH)]
+        #[Assert\Length(max:Url::MAX_URL_LENGTH)]
         #[Assert\Url(requireTld: true)]
         public string $url,
         #[Assert\DateTime(format: self::EXPIRES_AT_FORMAT)]

@@ -6,12 +6,8 @@ namespace App\Repository;
 
 use App\Entity\Url;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @method Url|null find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null)
- */
 class UrlRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
