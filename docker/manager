@@ -76,7 +76,7 @@ down() {
 }
 
 build() {
-    $DOCKER_COMPOSE_DEV build
+    $DOCKER_COMPOSE_DEV build --no-cache
 }
 
 composer_install() {
