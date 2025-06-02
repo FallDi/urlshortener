@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Application\Controller;
 
 use App\Common\Clock;
-use App\Controller\Request\CreateUrlRequest;
-use App\Controller\UrlController;
+use App\Controller\V1\Request\CreateUrlRequest;
+use App\Controller\V1\UrlController;
 use App\Service\Url\UrlShortener;
 use App\Tests\Application\BaseWebTestCase;
 use DateInterval;
@@ -75,7 +75,7 @@ class UserUrlControllerTest extends BaseWebTestCase
     public function testCreateWithWrongParameters(array $params, array $expected): void
     {
         $client = static::createClient();
-        $client->jsonRequest('POST', '/api/urls', $params);
+        $client->jsonRequest('POST', '/api/v1/urls', $params);
         $responseContent = $client->getResponse()->getContent();
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -90,7 +90,7 @@ class UserUrlControllerTest extends BaseWebTestCase
             'url' => 'http://localhost.local/test1/test2',
             'expiresAt' => new DateTimeImmutable('now + 1 day')->format(CreateUrlRequest::EXPIRES_AT_FORMAT),
         ];
-        $client->jsonRequest('POST', '/api/urls', $payload);
+        $client->jsonRequest('POST', '/api/v1/urls', $payload);
         $responseContent = $client->getResponse()->getContent();
 
         self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -107,7 +107,7 @@ class UserUrlControllerTest extends BaseWebTestCase
     public function testViewInvalidUrl(): void
     {
         $client = static::createClient();
-        $client->jsonRequest('GET', '/api/urls/!');
+        $client->jsonRequest('GET', '/api/v1/urls/!');
         $responseContent = $client->getResponse()->getContent();
 
         $expected = [

@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Controller\V1;
 
-use OpenApi\Attributes as OA;
-use App\Controller\Request\CreateUrlRequest;
+use App\Controller\V1\Request\CreateUrlRequest;
 use App\Service\UserMeta\UserMetaDataRaw;
 use App\UseCase\CreateShortUrl\CreateShortUrlCommand;
 use App\UseCase\CreateShortUrl\CreateShortUrlUseCase;
@@ -14,6 +13,7 @@ use App\UseCase\ViewShortUrl\ShortUrlNotFoundException;
 use App\UseCase\ViewShortUrl\ViewShortUrlCommand;
 use App\UseCase\ViewShortUrl\ViewShortUrlUseCase;
 use DateTimeImmutable;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -32,7 +32,7 @@ class UrlController extends AbstractController
     }
 
     #[OA\Post(
-        path: '/api/urls',
+        path: '/api/v1/urls',
         summary: 'Creates short URL',
         requestBody: new OA\RequestBody(
             description: 'Input data format',
@@ -78,7 +78,7 @@ class UrlController extends AbstractController
     }
 
     #[OA\Get(
-        path: '/api/urls/{id}',
+        path: '/api/v1/urls/{id}',
         summary: 'View short URL',
         parameters: [
             new OA\PathParameter(name: 'id', required: true, schema: new OA\Schema(type: 'string')),

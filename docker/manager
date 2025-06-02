@@ -66,7 +66,7 @@ up() {
     migrations_up
 
     echo "Project started! Try to make URL short"
-    echo "curl -XPOST 'http://localhost:8182/api/urls?XDEBUG_SESSION=PHPSTORM' \\"
+    echo "curl -XPOST 'http://localhost:8182/api/v1/urls?XDEBUG_SESSION=PHPSTORM' \\"
     echo "    -H 'Content-Type: application/json' \\"
     echo "    --data '{\"url\":\"https://symfony.com/doc/current/console.html\", \"expiresAt\":\"\"}'"
 }

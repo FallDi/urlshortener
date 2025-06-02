@@ -19,15 +19,15 @@ Once the ID is generated, it is converted into a shorter URL using encoding simi
 * Create URL someway
 Via CURL 
 ```
-curl -XPOST 'http://localhost:8182/api/urls?XDEBUG_SESSION=PHPSTORM' \
+curl -XPOST 'http://localhost:8182/api/v1/urls?XDEBUG_SESSION=PHPSTORM' \
         -H "Content-Type: application/json" \
         --data '{"url":"https://symfony.com/doc/current/console.html", "expiresAt":"2029-01-01T02:03:04Z"}'
 
-Response: {"shortUrl":"http:\/\/localhost:8182\/api\/urls\/M"}
+Response: {"shortUrl":"http:\/\/localhost:8182\/api\/v1/urls\/M"}
 ```
 * Visit short url
 ```
-curl -v -XGET http://localhost:8182/api/urls/M?XDEBUG_SESSION=PHPSTORM
+curl -v -XGET http://localhost:8182/api/v1/urls/M?XDEBUG_SESSION=PHPSTORM
 
 HTTP/1.1 302 Found
 Cache-Control: no-cache, private

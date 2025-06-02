@@ -6,10 +6,10 @@ servers:
   -
     url: 'http://localhost:8182'
 paths:
-  /api/urls:
+  /api/v1/urls:
     post:
       summary: 'Creates short URL'
-      operationId: e3284e428d332e42292648b1adc3fc0f
+      operationId: 56feede3fd0f8504659f75474b493373
       requestBody:
         description: 'Input data format'
         content:
@@ -41,10 +41,10 @@ paths:
           $ref: '#/components/responses/clientError'
         '500':
           $ref: '#/components/responses/serverError'
-  '/api/urls/{id}':
+  '/api/v1/urls/{id}':
     get:
       summary: 'View short URL'
-      operationId: a8b8a8a9195fe7b8037a51cf6e79b363
+      operationId: efbef1c84a517d2f12a170df508b6792
       parameters:
         -
           name: id
