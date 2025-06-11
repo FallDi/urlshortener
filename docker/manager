@@ -6,15 +6,13 @@ set -e
 DOCKER_NETWORK_NAME=app
 DOCKER_COMPOSE_DEV="docker compose -f ./docker/compose.yml"
 
-ARGS=${@:2}
-
 main() {
     case "${1:-}" in
         up) up;;
         down) down;;
         build) build;;
         composer-install) composer_install;;
-        composer-bash) composer_bash "${@:2}";;
+        composer-bash) composer_bash;;
         migrations-up) migrations_up;;
         php-fpm-bash) php_fpm_bash;;
 
