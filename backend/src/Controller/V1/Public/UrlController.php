@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\V1;
+namespace App\Controller\V1\Public;
 
-use App\Controller\V1\Request\CreateUrlRequest;
+use App\Controller\V1\Public\Request\CreateUrlRequest;
 use App\Service\UserMeta\UserMetaDataRaw;
 use App\UseCase\CreateShortUrl\CreateShortUrlCommand;
 use App\UseCase\CreateShortUrl\CreateShortUrlUseCase;
@@ -32,7 +32,7 @@ class UrlController extends AbstractController
     }
 
     #[OA\Post(
-        path: '/api/v1/urls',
+        path: '/api/public/v1/urls',
         summary: 'Creates short URL',
         requestBody: new OA\RequestBody(
             description: 'Input data format',
@@ -78,7 +78,7 @@ class UrlController extends AbstractController
     }
 
     #[OA\Get(
-        path: '/api/v1/urls/{id}',
+        path: '/api/public/v1/urls/{id}',
         summary: 'View short URL',
         parameters: [
             new OA\PathParameter(name: 'id', required: true, schema: new OA\Schema(type: 'string')),

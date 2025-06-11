@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Url;
 
+use App\Common\RouteNames;
 use App\Entity\Url;
 use App\Repository\UrlRepository;
 use DateTimeImmutable;
@@ -26,7 +27,7 @@ readonly class UrlShortener
         $shortUrlId = $this->baseConverter->base10ToBaseShortUrl($urlObject->getId());
 
         return $this->urlGenerator->generate(
-            'short-url-view',
+            RouteNames::PUBLIC_SHORT_URL_VIEW,
             ['id' => $shortUrlId],
             UrlGeneratorInterface::ABSOLUTE_URL,
         );

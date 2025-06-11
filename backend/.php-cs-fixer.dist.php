@@ -17,6 +17,7 @@ return new PhpCsFixer\Config()
         'no_unused_imports' => true,
         'method_chaining_indentation' => true,
         'declare_strict_types' => true,
+        'class_attributes_separation' => ['elements' => ['const' => 'one', 'method' => 'one', 'property' => 'one']],
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder);

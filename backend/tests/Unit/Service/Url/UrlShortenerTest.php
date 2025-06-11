@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Service\Url;
 
+use App\Common\RouteNames;
 use App\Entity\Url;
 use App\Repository\UrlRepository;
 use App\Service\Url\BaseConverter;
@@ -54,7 +55,7 @@ class UrlShortenerTest extends TestCase
         $expectedShortUrl = "http://localhost/bla-bla/{$shortUrlId}";
         $urlGenerator->expects($this->once())
             ->method('generate')
-            ->with('short-url-view', ['id' => $shortUrlId], UrlGeneratorInterface::ABSOLUTE_URL)
+            ->with(RouteNames::PUBLIC_SHORT_URL_VIEW, ['id' => $shortUrlId], UrlGeneratorInterface::ABSOLUTE_URL)
             ->willReturn($expectedShortUrl);
 
         $urlShortener = new UrlShortener($baseConverter, $urlGenerator, $urlRepository);

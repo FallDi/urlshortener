@@ -62,11 +62,11 @@ up() {
     $DOCKER_COMPOSE_DEV pull
     composer_install
 
-    $DOCKER_COMPOSE_DEV up -d
+    $DOCKER_COMPOSE_DEV up -d --remove-orphans --wait
     migrations_up
 
     echo "Project started! Try to make URL short"
-    echo "curl -XPOST 'http://localhost:8182/api/v1/urls?XDEBUG_SESSION=PHPSTORM' \\"
+    echo "curl -XPOST 'http://localhost:8182/api/public/v1/urls?XDEBUG_SESSION=PHPSTORM' \\"
     echo "    -H 'Content-Type: application/json' \\"
     echo "    --data '{\"url\":\"https://symfony.com/doc/current/console.html\", \"expiresAt\":\"\"}'"
 }

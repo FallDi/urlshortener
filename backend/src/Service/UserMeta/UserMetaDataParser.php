@@ -9,6 +9,7 @@ use DeviceDetector\DeviceDetector;
 readonly class UserMetaDataParser
 {
     private const string OS_UNKNOWN = 'unknown';
+
     private const string BROWSER_UNKNOWN = 'unknown';
 
     public function __construct(private DeviceDetector $deviceDetector)

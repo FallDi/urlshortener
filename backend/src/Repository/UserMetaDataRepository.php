@@ -10,6 +10,7 @@ use App\Service\UserMeta\UserMetaDataParsed;
 readonly class UserMetaDataRepository
 {
     private const string KEY_OS = 'os';
+
     private const string KEY_BROWSER = 'browser';
 
     public function __construct(private RedisStatsClient $statsClient)

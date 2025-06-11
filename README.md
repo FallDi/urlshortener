@@ -19,7 +19,7 @@ Once the ID is generated, it is converted into a shorter URL using encoding simi
 * Create URL someway
 Via CURL 
 ```
-curl -XPOST 'http://localhost:8182/api/v1/urls?XDEBUG_SESSION=PHPSTORM' \
+curl -XPOST 'http://localhost:8182/api/public/v1/urls?XDEBUG_SESSION=PHPSTORM' \
         -H "Content-Type: application/json" \
         --data '{"url":"https://symfony.com/doc/current/console.html", "expiresAt":"2029-01-01T02:03:04Z"}'
 
@@ -27,7 +27,7 @@ Response: {"shortUrl":"http:\/\/localhost:8182\/api\/v1/urls\/M"}
 ```
 * Visit short url
 ```
-curl -v -XGET http://localhost:8182/api/v1/urls/M?XDEBUG_SESSION=PHPSTORM
+curl -v -XGET http://localhost:8182/api/public/v1/urls/M?XDEBUG_SESSION=PHPSTORM
 
 HTTP/1.1 302 Found
 Cache-Control: no-cache, private
@@ -79,6 +79,7 @@ Helpful services:
   xdebug-container-off [container]         Disables xdebug inside a specific container
 ```
 * Run any SQL query `php backend/bin/console dbal:run-sql 'SELECT * FROM url'`
+* Create migration from Entity `php backend/bin/console doctrine:migrations:diff`
 * Xdebug3 configuration
   * run `docker compose -f ./docker/compose.yml ps`, fetch container name
   * run `./docker/manager $containerName` e.g. `./docker/manager xdebug-container-on docker-php-fpm-1`
@@ -90,7 +91,10 @@ Helpful services:
 
 ## Troubleshooting
 * Project looks outdated after source code changes
-  * Solution: Try to cleanup Symfony DI container cache e.g. `APP_ENV=dev php backend/bin/console cache:clear`
+  * Solution: Try to cleanup Symfony DI container cache and cache pools e.g. 
+```
+  APP_ENV=dev php backend/bin/console cache:clear && php backend/bin/console cache:pool:clear --all
+```
 * I do changes in docker compose configuration (e.g. update service or Dockerfile), but changes not updated after 
   `./docker/manager up`
   * Solution: try to build services via `./docker/manager build`

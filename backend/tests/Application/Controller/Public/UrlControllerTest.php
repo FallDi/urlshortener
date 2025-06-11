@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Application\Controller;
+namespace App\Tests\Application\Controller\Public;
 
 use App\Common\Clock;
-use App\Controller\V1\Request\CreateUrlRequest;
-use App\Controller\V1\UrlController;
+use App\Controller\V1\Public\Request\CreateUrlRequest;
+use App\Controller\V1\Public\UrlController;
 use App\Service\Url\UrlShortener;
 use App\Tests\Application\BaseWebTestCase;
 use DateInterval;
@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 #[CoversMethod(UrlController::class, 'create')]
 #[CoversMethod(UrlController::class, 'view')]
-class UserUrlControllerTest extends BaseWebTestCase
+class UrlControllerTest extends BaseWebTestCase
 {
     use JsonAssertions;
 
@@ -75,7 +75,7 @@ class UserUrlControllerTest extends BaseWebTestCase
     public function testCreateWithWrongParameters(array $params, array $expected): void
     {
         $client = static::createClient();
-        $client->jsonRequest('POST', '/api/v1/urls', $params);
+        $client->jsonRequest('POST', '/api/public/v1/urls', $params);
         $responseContent = $client->getResponse()->getContent();
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -90,7 +90,7 @@ class UserUrlControllerTest extends BaseWebTestCase
             'url' => 'http://localhost.local/test1/test2',
             'expiresAt' => new DateTimeImmutable('now + 1 day')->format(CreateUrlRequest::EXPIRES_AT_FORMAT),
         ];
-        $client->jsonRequest('POST', '/api/v1/urls', $payload);
+        $client->jsonRequest('POST', '/api/public/v1/urls', $payload);
         $responseContent = $client->getResponse()->getContent();
 
         self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -107,7 +107,7 @@ class UserUrlControllerTest extends BaseWebTestCase
     public function testViewInvalidUrl(): void
     {
         $client = static::createClient();
-        $client->jsonRequest('GET', '/api/v1/urls/!');
+        $client->jsonRequest('GET', '/api/public/v1/urls/!');
         $responseContent = $client->getResponse()->getContent();
 
         $expected = [
