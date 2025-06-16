@@ -12,8 +12,11 @@ services:
     depends_on:
       - php-fpm
     healthcheck:
-      # TODO: exit code must be 0 or 1, see https://docs.docker.com/reference/dockerfile/#healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost/api/internal/v1/probes/startup"]
+      # See https://docs.docker.com/reference/compose-file/services/#healthcheck
+      # See https://docs.docker.com/reference/dockerfile/#healthcheck
+      # Curl may return different non-zero exit status, however healthcheck requires exit status 1 if container isn't
+      # worked correctly. So due to this '|| exit 1' is used
+      test: ["CMD-SHELL", "curl -f http://localhost/api/internal/v1/probes/startup || exit 1"]
       interval: 1s
       start_period: 0s
       timeout: 1s
@@ -32,7 +35,10 @@ services:
 
   db:
     image: mariadb:11.7.2
-    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_520_ci', '--transaction-isolation=READ-COMMITTED']
+    command:
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_unicode_520_ci'
+      - '--transaction-isolation=READ-COMMITTED'
     environment:
       MYSQL_ROOT_PASSWORD: some_s3cr3t_r00t_PWD
     networks:
