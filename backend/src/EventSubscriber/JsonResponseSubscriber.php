@@ -18,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Throwable;
 
 /**
  * Custom handling of errors to respond in JSON format
@@ -25,6 +26,9 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
  */
 class JsonResponseSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Error messages from such exception can be safely displayed to end user without any sensitive info disclosure
+     */
     private const array SAFE_ERROR_MESSAGE_EXCEPTIONS = [
         NotFoundHttpException::class,
         BadRequestHttpException::class,
@@ -65,19 +69,25 @@ class JsonResponseSubscriber implements EventSubscriberInterface
                 $apiResponse = new ClientErrorResponse('Invalid request', $trace, $violations);
             } else {
                 $apiResponse = new ClientErrorResponse(
-                    $this->debug || in_array(get_class($exception), self::SAFE_ERROR_MESSAGE_EXCEPTIONS, true)
-                        ? $exception->getMessage()
-                        : 'Internal error',
+                    $this->getResponseMessage(
+                        $this->debug || in_array(get_class($exception), self::SAFE_ERROR_MESSAGE_EXCEPTIONS, true),
+                        $exception,
+                    ),
                     $trace,
                 );
             }
         } else {
             $httpCode = Response::HTTP_INTERNAL_SERVER_ERROR;
-            $apiResponse = new ServerErrorResponse('Internal error', $trace);
+            $apiResponse = new ServerErrorResponse($this->getResponseMessage($this->debug, $exception), $trace);
         }
 
         // If your listener calls setResponse() on the ExceptionEvent event,
         // propagation will be stopped and the response will be sent to the client.
         $event->setResponse(new JsonResponse($apiResponse->toArray(), $httpCode));
+    }
+
+    private function getResponseMessage(bool $isShowRealMessage, Throwable $exception): string
+    {
+        return $isShowRealMessage ? $exception->getMessage() : 'Internal server error';
     }
 }
